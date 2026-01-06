@@ -16,6 +16,20 @@ class OrderService {
         return apiService.get<Order>(`${this.BASE_PATH}/${id}`);
     }
 
+    async getByDateRange(from: string, to: string, page: number = 0, size: number = 10): Promise<Order[]> {
+        const response = await apiService.get<any>(
+            `${this.BASE_PATH}/by-date?from=${from}&to=${to}&page=${page}&size=${size}`
+        );
+        return response.content || response;
+    }
+
+    async getByStatus(status: string, page: number = 0, size: number = 10): Promise<Order[]> {
+        const response = await apiService.get<any>(
+            `${this.BASE_PATH}/status?status=${status}&page=${page}&size=${size}`
+        );
+        return response.content || response;
+    }
+
     async create(userId: number, orderData: any): Promise<Order> {
         return apiService.post<Order>(this.BASE_PATH, orderData, {
             headers: {
