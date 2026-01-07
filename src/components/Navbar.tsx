@@ -55,11 +55,15 @@ const Navbar: React.FC = () => {
         }
     };
 
-    const handleLogout = () => {
-        authService.logout();
-        checkAuthStatus();
-        setUserEmail('');
-        showSuccess('Logged out successfully');
+    const handleLogout = async () => {
+        try {
+            await authService.logout();
+            setUserEmail('');
+            showSuccess('Logged out successfully');
+            window.location.href = '/login';
+        } catch (error) {
+            showError('Logout failed');
+        }
     };
 
     const isActive = (path: string) => pathname === path;

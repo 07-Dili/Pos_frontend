@@ -5,7 +5,6 @@ import Navbar from '@/components/Navbar';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ToastContainer from '@/components/ToastContainer';
 import AddClientModal from '@/components/AddClientModal';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { useToast } from '@/hooks/useToast';
 import clientService from '@/services/clientService';
 import { Client, ClientFormData } from '@/types/client.types';
@@ -139,7 +138,7 @@ export default function ClientsPage() {
     };
 
     return (
-        <ProtectedRoute>
+        <>
             <Navbar />
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <AddClientModal
@@ -375,6 +374,6 @@ export default function ClientsPage() {
                     </>
                 )}
             </div>
-        </ProtectedRoute>
+        </>
     );
 }

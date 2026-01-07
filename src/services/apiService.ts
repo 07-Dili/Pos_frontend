@@ -11,6 +11,7 @@ class ApiService {
             headers: {
                 'Content-Type': 'application/json',
             },
+            withCredentials: true,
         });
 
         this.axiosInstance.interceptors.request.use(

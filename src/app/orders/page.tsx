@@ -6,8 +6,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ToastContainer from '@/components/ToastContainer';
 import OrderDetailsModal from '@/components/OrderDetailsModal';
 import CreateOrderModal from '@/components/CreateOrderModal';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { useToast } from '@/hooks/useToast';
+import { useDebounce } from '@/hooks/useDebounce';
 import orderService from '@/services/orderService';
 import authService from '@/services/authService';
 import { Order, OrderStatus } from '@/types/order.types';
@@ -30,6 +30,7 @@ export default function OrdersPage() {
     const [searchId, setSearchId] = useState<string>('');
     const [isFiltering, setIsFiltering] = useState(false);
     const { toasts, showSuccess, showError, removeToast } = useToast();
+    const debouncedSearchId = useDebounce(searchId, 500);
 
     const pageSize = 10;
 
@@ -46,6 +47,19 @@ export default function OrdersPage() {
             fetchOrders(currentPage);
         }
     }, [currentPage]);
+
+    useEffect(() => {
+        if (filterType === 'id') {
+            if (debouncedSearchId) {
+                handleIdSearch();
+            } else if (searchId === '') {
+                setIsFiltering(false);
+                setCurrentPage(0);
+                fetchOrders(0);
+            }
+        }
+    }, [debouncedSearchId]);
+
 
     const fetchOrders = async (page: number) => {
         try {
@@ -242,7 +256,7 @@ export default function OrdersPage() {
                 })),
             };
 
-            await orderService.create(user.id, orderData);
+            await orderService.create(orderData);
             showSuccess('Order created successfully!');
             await fetchOrders(currentPage);
         } catch (err: any) {
@@ -252,7 +266,7 @@ export default function OrdersPage() {
     };
 
     return (
-        <ProtectedRoute>
+        <>
             <Navbar />
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <OrderDetailsModal
@@ -286,142 +300,133 @@ export default function OrdersPage() {
                     </button>
                 </div>
 
-                <div className="d-flex gap-3 mb-4">
-                    <div className="input-group" style={{ maxWidth: '350px' }}>
-                        <input
-                            type="number"
-                            className="form-control"
-                            id="searchId"
-                            value={searchId}
-                            onChange={(e) => setSearchId(e.target.value)}
-                            placeholder="Search by Order ID"
-                        />
+                <div className="d-flex gap-2 mb-4">
+                    <div className="dropdown">
                         <button
-                            className="btn btn-primary"
-                            onClick={handleIdSearch}
-                            disabled={loading}
+                            className="btn btn-primary dropdown-toggle"
+                            type="button"
+                            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="16"
                                 height="16"
                                 fill="currentColor"
-                                className="bi bi-search"
+                                className="bi bi-funnel me-1"
                                 viewBox="0 0 16 16"
                             >
-                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z" />
                             </svg>
+                            Filter By
                         </button>
+                        {showFilterDropdown && (
+                            <ul className="dropdown-menu show">
+                                <li>
+                                    <button
+                                        className="dropdown-item"
+                                        onClick={() => handleFilterTypeSelect('date')}
+                                    >
+                                        Date Range
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        className="dropdown-item"
+                                        onClick={() => handleFilterTypeSelect('status')}
+                                    >
+                                        Status
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        className="dropdown-item"
+                                        onClick={() => handleFilterTypeSelect('id')}
+                                    >
+                                        Order ID
+                                    </button>
+                                </li>
+                            </ul>
+                        )}
                     </div>
 
-                    <div className="d-flex gap-2 align-items-center flex-grow-1">
-                        <div className="dropdown">
+                    {filterType === 'date' && (
+                        <div className="d-flex gap-2 flex-grow-1">
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={fromDate}
+                                onChange={(e) => setFromDate(e.target.value)}
+                                placeholder="From Date"
+                            />
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={toDate}
+                                onChange={(e) => setToDate(e.target.value)}
+                                placeholder="To Date"
+                            />
                             <button
-                                className="btn btn-primary dropdown-toggle"
-                                type="button"
-                                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                                className="btn btn-success"
+                                onClick={handleDateFilter}
+                                disabled={loading}
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    className="bi bi-funnel me-1"
-                                    viewBox="0 0 16 16"
-                                >
-                                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z" />
-                                </svg>
-                                Filter By
+                                Apply
                             </button>
-                            {showFilterDropdown && (
-                                <ul className="dropdown-menu show">
-                                    <li>
-                                        <button
-                                            className="dropdown-item"
-                                            onClick={() => handleFilterTypeSelect('date')}
-                                        >
-                                            Date Range
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                            className="dropdown-item"
-                                            onClick={() => handleFilterTypeSelect('status')}
-                                        >
-                                            Status
-                                        </button>
-                                    </li>
-                                </ul>
-                            )}
                         </div>
+                    )}
 
-                        {filterType === 'date' && (
-                            <div className="d-flex gap-2 flex-grow-1">
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={fromDate}
-                                    onChange={(e) => setFromDate(e.target.value)}
-                                    placeholder="From Date"
-                                />
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={toDate}
-                                    onChange={(e) => setToDate(e.target.value)}
-                                    placeholder="To Date"
-                                />
-                                <button
-                                    className="btn btn-success"
-                                    onClick={handleDateFilter}
-                                    disabled={loading}
-                                >
-                                    Apply
-                                </button>
-                            </div>
-                        )}
-
-                        {filterType === 'status' && (
-                            <div className="d-flex gap-2 flex-grow-1">
-                                <select
-                                    className="form-select"
-                                    value={selectedStatus}
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
-                                >
-                                    <option value="">Select Status</option>
-                                    <option value="CREATED">Created</option>
-                                    <option value="INVOICED">Invoiced</option>
-                                </select>
-                                <button
-                                    className="btn btn-success"
-                                    onClick={handleStatusFilter}
-                                    disabled={loading}
-                                >
-                                    Apply
-                                </button>
-                            </div>
-                        )}
-
-                        {isFiltering && (
-                            <button
-                                className="btn btn-secondary"
-                                onClick={handleClearFilter}
+                    {filterType === 'status' && (
+                        <div className="d-flex gap-2 flex-grow-1">
+                            <select
+                                className="form-select"
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    className="bi bi-x-circle me-1"
-                                    viewBox="0 0 16 16"
-                                >
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                                </svg>
-                                Clear
+                                <option value="">Select Status</option>
+                                <option value="CREATED">Created</option>
+                                <option value="INVOICED">Invoiced</option>
+                            </select>
+                            <button
+                                className="btn btn-success"
+                                onClick={handleStatusFilter}
+                                disabled={loading}
+                            >
+                                Apply
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
+
+                    {filterType === 'id' && (
+                        <div className="d-flex gap-2 flex-grow-1">
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value)}
+                                placeholder="Enter Order ID "
+                            />
+                        </div>
+                    )}
+
+                    {isFiltering && (
+                        <button
+                            className="btn btn-secondary"
+                            onClick={handleClearFilter}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                fill="currentColor"
+                                className="bi bi-x-circle me-1"
+                                viewBox="0 0 16 16"
+                            >
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                            Clear
+                        </button>
+                    )}
                 </div>
 
                 {loading ? (
@@ -577,6 +582,6 @@ export default function OrdersPage() {
                     </>
                 )}
             </div>
-        </ProtectedRoute>
+        </>
     );
 }

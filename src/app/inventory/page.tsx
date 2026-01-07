@@ -6,7 +6,6 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ToastContainer from '@/components/ToastContainer';
 import AddInventoryModal from '@/components/AddInventoryModal';
 import UploadInventoryModal from '@/components/UploadInventoryModal';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { useToast } from '@/hooks/useToast';
 import inventoryService from '@/services/inventoryService';
 import authService from '@/services/authService';
@@ -173,7 +172,7 @@ export default function InventoryPage() {
     };
 
     return (
-        <ProtectedRoute>
+        <>
             <Navbar />
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <AddInventoryModal
@@ -416,6 +415,6 @@ export default function InventoryPage() {
                     </>
                 )}
             </div>
-        </ProtectedRoute>
+        </>
     );
 }

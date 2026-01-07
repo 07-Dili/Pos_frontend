@@ -30,35 +30,35 @@ class OrderService {
         return response.content || response;
     }
 
-    async create(userId: number, orderData: any): Promise<Order> {
-        return apiService.post<Order>(this.BASE_PATH, orderData, {
-            headers: {
-                'userId': userId.toString()
-            }
-        });
+    async create(orderData: any): Promise<Order> {
+        return apiService.post<Order>(this.BASE_PATH, orderData);
     }
+
+
 
     async generateInvoice(orderId: number): Promise<any> {
         return apiService.post<any>(`${this.INVOICE_PATH}/generate/${orderId}`, {});
     }
 
     async downloadInvoice(orderId: number): Promise<Blob> {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}${this.INVOICE_PATH}/${orderId}/download`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/pdf',
-                },
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error('Failed to download invoice');
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}${this.INVOICE_PATH}/${orderId}/download`,
+        {
+            method: 'GET',
+            credentials: 'include', 
+            headers: {
+                'Content-Type': 'application/pdf',
+            },
         }
+    );
 
-        return response.blob();
+    if (!response.ok) {
+        throw new Error('Failed to download invoice');
     }
+
+    return response.blob();
+}
+
 }
 
 export default new OrderService();

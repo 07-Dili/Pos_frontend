@@ -6,7 +6,6 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ToastContainer from '@/components/ToastContainer';
 import AddProductModal from '@/components/AddProductModal';
 import UploadProductModal from '@/components/UploadProductModal';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { useToast } from '@/hooks/useToast';
 import productService from '@/services/productService';
 import authService from '@/services/authService';
@@ -175,7 +174,7 @@ export default function ProductsPage() {
     };
 
     return (
-        <ProtectedRoute>
+        <>
             <Navbar />
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <AddProductModal
@@ -453,6 +452,6 @@ export default function ProductsPage() {
                     </>
                 )}
             </div>
-        </ProtectedRoute>
+        </>
     );
 }
