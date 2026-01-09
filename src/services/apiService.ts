@@ -14,23 +14,10 @@ class ApiService {
             withCredentials: true,
         });
 
-        this.axiosInstance.interceptors.request.use(
-            (config) => {
-                const token = localStorage.getItem('authToken');
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-
         this.axiosInstance.interceptors.response.use(
             (response) => response,
             (error) => {
                 if (error.response?.status === 401) {
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('currentUser');
                     window.location.href = '/login';
                 }
 

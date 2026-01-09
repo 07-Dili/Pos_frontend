@@ -242,12 +242,6 @@ export default function OrdersPage() {
 
     const handleCreateOrder = async (items: any[]) => {
         try {
-            const user = authService.getCurrentUser();
-            if (!user) {
-                showError('Please login to create an order');
-                return;
-            }
-
             const orderData = {
                 items: items.map(item => ({
                     barcode: item.barcode,
@@ -258,7 +252,8 @@ export default function OrdersPage() {
 
             await orderService.create(orderData);
             showSuccess('Order created successfully!');
-            await fetchOrders(currentPage);
+            setShowCreateModal(false);
+            fetchOrders(currentPage);
         } catch (err: any) {
             showError(err.response?.data?.message || 'Failed to create order');
             throw err;
@@ -280,27 +275,7 @@ export default function OrdersPage() {
                 onSubmit={handleCreateOrder}
             />
             <div className="container mt-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Orders</h2>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => setShowCreateModal(true)}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-plus-lg me-1"
-                            viewBox="0 0 16 16"
-                        >
-                            <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
-                        </svg>
-                        Create Order
-                    </button>
-                </div>
-
-                <div className="d-flex gap-2 mb-4">
+                <div className="d-flex justify-content-between align-items-center gap-3 mb-4">
                     <div className="dropdown">
                         <button
                             className="btn btn-primary dropdown-toggle"
@@ -396,6 +371,7 @@ export default function OrdersPage() {
                         </div>
                     )}
 
+
                     {filterType === 'id' && (
                         <div className="d-flex gap-2 flex-grow-1">
                             <input
@@ -403,8 +379,15 @@ export default function OrdersPage() {
                                 className="form-control"
                                 value={searchId}
                                 onChange={(e) => setSearchId(e.target.value)}
-                                placeholder="Enter Order ID "
+                                placeholder="Enter Order ID"
                             />
+                            <button
+                                className="btn btn-success"
+                                onClick={handleIdSearch}
+                                disabled={loading}
+                            >
+                                Apply
+                            </button>
                         </div>
                     )}
 
@@ -427,6 +410,23 @@ export default function OrdersPage() {
                             Clear
                         </button>
                     )}
+
+                    <button
+                        className="btn btn-primary ms-auto"
+                        onClick={() => setShowCreateModal(true)}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            className="bi bi-plus-lg me-1"
+                            viewBox="0 0 16 16"
+                        >
+                            <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+                        </svg>
+                        Create Order
+                    </button>
                 </div>
 
                 {loading ? (

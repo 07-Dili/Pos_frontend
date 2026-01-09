@@ -24,7 +24,6 @@ export default function InventoryPage() {
     const [searchField, setSearchField] = useState<'name' | 'barcode'>('name');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [isSupervisor, setIsSupervisor] = useState(false);
     const { toasts, showSuccess, showError, removeToast } = useToast();
 
     const pageSize = 10;
@@ -33,24 +32,7 @@ export default function InventoryPage() {
         fetchInventory(currentPage);
     }, [currentPage]);
 
-    useEffect(() => {
-        const checkUserRole = () => {
-            const user = authService.getCurrentUser();
-            setIsSupervisor(user?.role === UserRole.SUPERVISOR);
-        };
 
-        checkUserRole();
-
-        const handleAuthChange = () => {
-            checkUserRole();
-        };
-
-        window.addEventListener('authChange', handleAuthChange);
-
-        return () => {
-            window.removeEventListener('authChange', handleAuthChange);
-        };
-    }, []);
 
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
@@ -238,25 +220,23 @@ export default function InventoryPage() {
                         </div>
                     </form>
                     <div className="d-flex gap-2">
-                        {isSupervisor && (
-                            <button
-                                className="btn btn-success"
-                                onClick={() => setShowUploadModal(true)}
+                        <button
+                            className="btn btn-success"
+                            onClick={() => setShowUploadModal(true)}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                fill="currentColor"
+                                className="bi bi-upload me-1"
+                                viewBox="0 0 16 16"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    className="bi bi-upload me-1"
-                                    viewBox="0 0 16 16"
-                                >
-                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
-                                </svg>
-                                Upload TSV
-                            </button>
-                        )}
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
+                            </svg>
+                            Upload TSV
+                        </button>
                         <button
                             className="btn btn-primary"
                             onClick={() => setShowAddModal(true)}

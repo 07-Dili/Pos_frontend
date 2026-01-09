@@ -43,8 +43,7 @@ export default function LoginPage() {
 
         setSubmitting(true);
         try {
-            const user = await authService.login(formData);
-            authService.setCurrentUser(user);
+            await authService.login(formData);
             showSuccess('Login successful!');
             router.push('/products');
         } catch (error: any) {

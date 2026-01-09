@@ -14,30 +14,12 @@ class AuthService {
         return response;
     }
 
-    setCurrentUser(user: User): void {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        window.dispatchEvent(new CustomEvent('authChange', { detail: { user } }));
-    }
-
-    getCurrentUser(): User | null {
-        const userStr = localStorage.getItem('currentUser');
-        return userStr ? JSON.parse(userStr) : null;
-    }
-
     async logout(): Promise<void> {
         try {
             await apiService.post(`${this.BASE_PATH}/logout`, {});
         } catch (error) {
             console.error('Logout error:', error);
-        } finally {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('authToken');
-            window.dispatchEvent(new CustomEvent('authChange', { detail: { user: null } }));
         }
-    }
-
-    isAuthenticated(): boolean {
-        return this.getCurrentUser() !== null;
     }
 }
 
