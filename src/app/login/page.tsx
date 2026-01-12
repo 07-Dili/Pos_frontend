@@ -45,7 +45,7 @@ export default function LoginPage() {
         try {
             await authService.login(formData);
             showSuccess('Login successful!');
-            router.push('/products');
+            router.push('/clients');
         } catch (error: any) {
             showError(error.response?.data?.message || 'Login failed');
         } finally {

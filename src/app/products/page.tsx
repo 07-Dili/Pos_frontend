@@ -40,7 +40,7 @@ export default function ProductsPage() {
             }
             setTotalElements(response.length);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to fetch products');
+            showError(err.response?.data?.message || err.message || 'Failed to fetch products');
         } finally {
             setLoading(false);
         }
@@ -90,7 +90,7 @@ export default function ProductsPage() {
             setEditForm({});
             showSuccess('Product updated successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to update product');
+            showError(err.response?.data?.message || err.message || 'Failed to update product');
         }
     };
 
@@ -113,7 +113,7 @@ export default function ProductsPage() {
             setTotalElements(results.length);
             setCurrentPage(0);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Search failed');
+            showError(err.response?.data?.message || err.message || 'Search failed');
         } finally {
             setLoading(false);
         }
@@ -137,7 +137,7 @@ export default function ProductsPage() {
             await fetchProducts(currentPage);
             showSuccess('Product added successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to add product');
+            showError(err.response?.data?.message || err.message || 'Failed to add product');
             throw err;
         }
     };
@@ -148,7 +148,7 @@ export default function ProductsPage() {
             await fetchProducts(currentPage);
             showSuccess('Products uploaded successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to upload file');
+            showError(err.response?.data?.message || err.message || 'Failed to upload file');
             throw err;
         }
     };

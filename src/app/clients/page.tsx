@@ -52,7 +52,7 @@ export default function ClientsPage() {
             }
             setTotalElements(response.length);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to fetch clients');
+            showError(err.response?.data?.message || err.message || 'Failed to fetch clients');
         } finally {
             setLoading(false);
         }
@@ -85,7 +85,7 @@ export default function ClientsPage() {
             setEditForm({});
             showSuccess('Client updated successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to update client');
+            showError(err.response?.data?.message || err.message || 'Failed to update client');
         }
     };
 
@@ -105,7 +105,7 @@ export default function ClientsPage() {
             await fetchClients(currentPage);
             showSuccess('Client added successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to add client');
+            showError(err.response?.data?.message || err.message || 'Failed to add client');
             throw err;
         }
     };
@@ -119,7 +119,7 @@ export default function ClientsPage() {
             setTotalElements(results.length);
             setCurrentPage(0);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Search failed');
+            showError(err.response?.data?.message || err.message || 'Search failed');
         } finally {
             setLoading(false);
         }

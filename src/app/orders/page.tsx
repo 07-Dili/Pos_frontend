@@ -72,7 +72,7 @@ export default function OrdersPage() {
                 setTotalPages(page + 2);
             }
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to fetch orders');
+            showError(err.response?.data?.message || err.message || 'Failed to fetch orders');
         } finally {
             setLoading(false);
         }
@@ -116,7 +116,7 @@ export default function OrdersPage() {
                 setTotalPages(currentPage + 2);
             }
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to filter orders');
+            showError(err.response?.data?.message || err.message || 'Failed to filter orders');
         } finally {
             setLoading(false);
         }
@@ -159,7 +159,7 @@ export default function OrdersPage() {
                 setTotalPages(currentPage + 2);
             }
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to filter orders');
+            showError(err.response?.data?.message || err.message || 'Failed to filter orders');
         } finally {
             setLoading(false);
         }
@@ -178,7 +178,7 @@ export default function OrdersPage() {
             setOrders([order]);
             setTotalPages(1);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Order not found');
+            showError(err.response?.data?.message || err.message || 'Order not found');
             setOrders([]);
         } finally {
             setLoading(false);
@@ -201,7 +201,7 @@ export default function OrdersPage() {
             setSelectedOrder(order);
             setShowDetailsModal(true);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to fetch order details');
+            showError(err.response?.data?.message || err.message || 'Failed to fetch order details');
         }
     };
 
@@ -212,7 +212,7 @@ export default function OrdersPage() {
             showSuccess('Invoice generated successfully!');
             await fetchOrders(currentPage);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to generate invoice');
+            showError(err.response?.data?.message || err.message || 'Failed to generate invoice');
         } finally {
             setGeneratingInvoice(null);
         }
@@ -234,7 +234,7 @@ export default function OrdersPage() {
 
             showSuccess('Invoice downloaded successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to download invoice');
+            showError(err.response?.data?.message || err.message || 'Failed to download invoice');
         } finally {
             setDownloadingInvoice(null);
         }
@@ -255,7 +255,7 @@ export default function OrdersPage() {
             setShowCreateModal(false);
             fetchOrders(currentPage);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to create order');
+            showError(err.response?.data?.message || err.message || 'Failed to create order');
             throw err;
         }
     };

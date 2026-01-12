@@ -58,7 +58,7 @@ export default function InventoryPage() {
             }
             setTotalElements(response.length);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to fetch inventory');
+            showError(err.response?.data?.message || err.message || 'Failed to fetch inventory');
         } finally {
             setLoading(false);
         }
@@ -90,7 +90,7 @@ export default function InventoryPage() {
             setEditForm({});
             showSuccess('Inventory updated successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to update inventory');
+            showError(err.response?.data?.message || err.message || 'Failed to update inventory');
         }
     };
 
@@ -113,7 +113,7 @@ export default function InventoryPage() {
             setTotalElements(results.length);
             setCurrentPage(0);
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Search failed');
+            showError(err.response?.data?.message || err.message || 'Search failed');
         } finally {
             setLoading(false);
         }
@@ -137,7 +137,7 @@ export default function InventoryPage() {
             await fetchInventory(currentPage);
             showSuccess('Inventory added successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to add inventory');
+            showError(err.response?.data?.message || err.message || 'Failed to add inventory');
             throw err;
         }
     };
@@ -148,7 +148,7 @@ export default function InventoryPage() {
             await fetchInventory(currentPage);
             showSuccess('Inventory uploaded successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || 'Failed to upload file');
+            showError(err.response?.data?.message || err.message || 'Failed to upload file');
             throw err;
         }
     };

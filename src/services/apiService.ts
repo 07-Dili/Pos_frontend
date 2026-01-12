@@ -23,7 +23,24 @@ class ApiService {
 
                 if (error.response?.data) {
                     const data = error.response.data;
-                    error.message = data.message || data.error || data.detail || error.message;
+
+                    // If data is a string, use it directly
+                    if (typeof data === 'string') {
+                        error.message = data;
+                    }
+                    // If data is an object, try multiple possible error message fields
+                    else if (typeof data === 'object') {
+                        error.message = data.message || data.error || data.detail || data.errorMessage ||
+                            data.msg || data.description ||
+                            // Check nested error object
+                            data.error?.message || data.errors?.[0]?.message ||
+                            error.message;
+                    }
+                }
+
+                // If no message extracted from data, try statusText (for servlet sendError)
+                if (!error.message || error.message === 'Request failed with status code ' + error.response?.status) {
+                    error.message = error.response?.statusText || error.message;
                 }
 
                 return Promise.reject(error);
