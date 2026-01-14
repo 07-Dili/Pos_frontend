@@ -63,3 +63,23 @@ a:hover {
   border-radius: var(--border-radius);
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
+
+
+table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+table td,
+table th {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 0;
+}
+
+
+.table-responsive {
+  overflow-x: auto;
+}

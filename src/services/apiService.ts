@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/pos';
 
 class ApiService {
     private axiosInstance: AxiosInstance;
@@ -24,21 +24,30 @@ class ApiService {
                 if (error.response?.data) {
                     const data = error.response.data;
 
-                    // If data is a string, use it directly
                     if (typeof data === 'string') {
                         error.message = data;
                     }
-                    // If data is an object, try multiple possible error message fields
                     else if (typeof data === 'object') {
-                        error.message = data.message || data.error || data.detail || data.errorMessage ||
-                            data.msg || data.description ||
-                            // Check nested error object
-                            data.error?.message || data.errors?.[0]?.message ||
-                            error.message;
+                        if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                            if (data.errors.length > 1) {
+                                error.message = data.errors
+                                    .map((err: any) => err.message)
+                                    .filter((msg: string) => msg)
+                                    .join('\n');
+                            }
+                            else {
+                                error.message = data.errors[0].message;
+                            }
+                        }
+                        else {
+                            error.message = data.message || data.error || data.detail || data.errorMessage ||
+                                data.msg || data.description ||
+                                data.error?.message ||
+                                error.message;
+                        }
                     }
                 }
 
-                // If no message extracted from data, try statusText (for servlet sendError)
                 if (!error.message || error.message === 'Request failed with status code ' + error.response?.status) {
                     error.message = error.response?.statusText || error.message;
                 }

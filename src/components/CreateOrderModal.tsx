@@ -3,6 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/types/product.types';
 import productService from '@/services/productService';
+import inventoryService from '@/services/inventoryService';
+
+interface ProductWithInventory extends Product {
+    quantity?: number;
+}
 
 interface OrderItem {
     productId: number;
@@ -20,8 +25,8 @@ interface CreateOrderModalProps {
 
 const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ show, onClose, onSubmit }) => {
     const [barcodeSearch, setBarcodeSearch] = useState<string>('');
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [recommendations, setRecommendations] = useState<Product[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<ProductWithInventory | null>(null);
+    const [recommendations, setRecommendations] = useState<ProductWithInventory[]>([]);
     const [showRecommendations, setShowRecommendations] = useState(false);
     const [quantity, setQuantity] = useState<number>(1);
     const [sellingPrice, setSellingPrice] = useState<number>(0);
@@ -57,7 +62,19 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ show, onClose, onSu
         try {
             const results = await productService.search(barcode, 'barcode');
             if (results.length > 0) {
-                setRecommendations(results);
+                const inventoryPromises = results.map(product =>
+                    inventoryService.filter(product.id.toString(), 'productId')
+                        .then(inv => inv.length > 0 ? inv[0] : null)
+                        .catch(() => null)
+                );
+                const inventoryData = await Promise.all(inventoryPromises);
+
+                const productsWithInventory: ProductWithInventory[] = results.map((product, index) => ({
+                    ...product,
+                    quantity: inventoryData[index]?.quantity || 0
+                }));
+
+                setRecommendations(productsWithInventory);
                 setShowRecommendations(true);
             } else {
                 setRecommendations([]);
@@ -205,7 +222,17 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ show, onClose, onSu
                                                     className={`form-control ${errors.product ? 'is-invalid' : ''}`}
                                                     id="barcodeSearch"
                                                     value={barcodeSearch}
-                                                    onChange={(e) => setBarcodeSearch(e.target.value)}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        setBarcodeSearch(value);
+                                                        if (!value.trim()) {
+                                                            setSelectedProduct(null);
+                                                            setQuantity(1);
+                                                            setSellingPrice(0);
+                                                            setRecommendations([]);
+                                                            setShowRecommendations(false);
+                                                        }
+                                                    }}
                                                     onKeyPress={(e) => {
                                                         if (e.key === 'Enter') {
                                                             e.preventDefault();
@@ -218,7 +245,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ show, onClose, onSu
                                                     autoFocus
                                                 />
 
-                                                {showRecommendations && recommendations.length > 0 && (
+                                                {showRecommendations && recommendations.length > 0 && barcodeSearch.trim() && (
                                                     <div
                                                         style={{
                                                             position: 'absolute',
@@ -252,7 +279,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ show, onClose, onSu
                                                             >
                                                                 <div style={{ fontWeight: 500 }}>{product.name}</div>
                                                                 <small className="text-muted">
-                                                                    {product.barcode} - MRP: ₹{product.mrp}
+                                                                    {product.barcode} - MRP: ₹{product.mrp} - Qty: {product.quantity || 0}
                                                                 </small>
                                                             </div>
                                                         ))}

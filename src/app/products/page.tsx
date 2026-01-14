@@ -11,6 +11,7 @@ import productService from '@/services/productService';
 import authService from '@/services/authService';
 import { Product, ProductFormData } from '@/types/product.types';
 import { UserRole } from '@/types/user.types';
+import { handleUploadError } from '@/utils/pdfErrorReport';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -40,7 +41,7 @@ export default function ProductsPage() {
             }
             setTotalElements(response.length);
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to fetch products');
+            showError(err.message || err.response?.data?.message || 'Failed to fetch products');
         } finally {
             setLoading(false);
         }
@@ -73,11 +74,6 @@ export default function ProductsPage() {
     };
 
     const handleSaveEdit = async () => {
-        if (!editingId || !editForm.name || !editForm.barcode || !editForm.mrp || !editForm.clientId) {
-            showError('Please fill in all required fields');
-            return;
-        }
-
         try {
             await productService.update(editingId, {
                 clientId: editForm.clientId,
@@ -90,7 +86,7 @@ export default function ProductsPage() {
             setEditForm({});
             showSuccess('Product updated successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to update product');
+            showError(err.message || err.response?.data?.message || 'Failed to update product');
         }
     };
 
@@ -113,7 +109,7 @@ export default function ProductsPage() {
             setTotalElements(results.length);
             setCurrentPage(0);
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Search failed');
+            showError(err.message || err.response?.data?.message || 'Search failed');
         } finally {
             setLoading(false);
         }
@@ -137,7 +133,7 @@ export default function ProductsPage() {
             await fetchProducts(currentPage);
             showSuccess('Product added successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to add product');
+            showError(err.message || err.response?.data?.message || 'Failed to add product');
             throw err;
         }
     };
@@ -148,7 +144,14 @@ export default function ProductsPage() {
             await fetchProducts(currentPage);
             showSuccess('Products uploaded successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to upload file');
+            const errorMessage = err.message || err.response?.data?.message || 'Failed to upload file';
+
+            if (errorMessage.includes('Product upload failed for:')) {
+                handleUploadError(errorMessage, 'Product');
+                showError('Upload completed with errors. Please check the downloaded PDF for details.');
+            } else {
+                showError(errorMessage);
+            }
             throw err;
         }
     };
@@ -272,7 +275,7 @@ export default function ProductsPage() {
                                     <table className="table table-striped table-hover">
                                         <thead className="table-primary">
                                             <tr>
-                                                <th className="text-center" style={{ width: '5%' }}>ID</th>
+                                                <th className="text-center" style={{ width: '5%' }}>S.No</th>
                                                 <th className="text-center" style={{ width: '10%' }}>Client ID</th>
                                                 <th className="text-center" style={{ width: '30%' }}>Name</th>
                                                 <th className="text-center" style={{ width: '15%' }}>Barcode</th>
@@ -288,9 +291,9 @@ export default function ProductsPage() {
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                products.map((product) => (
+                                                products.map((product, index) => (
                                                     <tr key={product.id}>
-                                                        <td className="text-center">{product.id}</td>
+                                                        <td className="text-center">{currentPage * pageSize + index + 1}</td>
                                                         <td className="text-center">
                                                             {editingId === product.id ? (
                                                                 <input

@@ -11,6 +11,7 @@ import inventoryService from '@/services/inventoryService';
 import authService from '@/services/authService';
 import { Inventory, InventoryFormData } from '@/types/inventory.types';
 import { UserRole } from '@/types/user.types';
+import { handleUploadError } from '@/utils/pdfErrorReport';
 
 export default function InventoryPage() {
     const [inventory, setInventory] = useState<Inventory[]>([]);
@@ -58,7 +59,7 @@ export default function InventoryPage() {
             }
             setTotalElements(response.length);
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to fetch inventory');
+            showError(err.message || err.response?.data?.message || 'Failed to fetch inventory');
         } finally {
             setLoading(false);
         }
@@ -75,11 +76,6 @@ export default function InventoryPage() {
     };
 
     const handleSaveEdit = async () => {
-        if (!editingId || editForm.quantity === undefined || editForm.quantity < 0) {
-            showError('Please enter a valid quantity');
-            return;
-        }
-
         try {
             await inventoryService.update({
                 productId: editingId,
@@ -90,7 +86,7 @@ export default function InventoryPage() {
             setEditForm({});
             showSuccess('Inventory updated successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to update inventory');
+            showError(err.message || err.response?.data?.message || 'Failed to update inventory');
         }
     };
 
@@ -113,7 +109,7 @@ export default function InventoryPage() {
             setTotalElements(results.length);
             setCurrentPage(0);
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Search failed');
+            showError(err.message || err.response?.data?.message || 'Search failed');
         } finally {
             setLoading(false);
         }
@@ -137,7 +133,7 @@ export default function InventoryPage() {
             await fetchInventory(currentPage);
             showSuccess('Inventory added successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to add inventory');
+            showError(err.message || err.response?.data?.message || 'Failed to add inventory');
             throw err;
         }
     };
@@ -148,7 +144,14 @@ export default function InventoryPage() {
             await fetchInventory(currentPage);
             showSuccess('Inventory uploaded successfully!');
         } catch (err: any) {
-            showError(err.response?.data?.message || err.message || 'Failed to upload file');
+            const errorMessage = err.message || err.response?.data?.message || 'Failed to upload file';
+
+            if (errorMessage.includes('Inventory upload failed for:')) {
+                handleUploadError(errorMessage, 'Inventory');
+                showError('Upload completed with errors. Please check the downloaded PDF for details.');
+            } else {
+                showError(errorMessage);
+            }
             throw err;
         }
     };
